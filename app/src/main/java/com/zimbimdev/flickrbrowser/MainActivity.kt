@@ -1,7 +1,6 @@
 package com.zimbimdev.flickrbrowser
 
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log
 import android.view.Menu
@@ -11,7 +10,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 private const val TAG = "MainActivity"
 
-class MainActivity : AppCompatActivity(), GetRawData.OnDownloadComplete {
+class MainActivity : AppCompatActivity(), GetRawData.OnDownloadComplete, GetFlickrJsonData.OnDataAvilable {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate called")
@@ -20,14 +19,10 @@ class MainActivity : AppCompatActivity(), GetRawData.OnDownloadComplete {
         setSupportActionBar(toolbar)
 
         val getRawData = GetRawData(this)
-//        getRawData.setDownloadCompletedListener(this)
-        getRawData.execute("https://api.flickr.com/services/feeds/photos_public.gne?tags=android,oreo&nojsoncallback=1")
 
-//
-//        fab.setOnClickListener { view ->
-//            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                .setAction("Action", null).show()
-//        }
+
+        getRawData.execute("https://api.flickr.com/services/feeds/photos_public.gne?tags=android,oreo&format=json&nojsoncallback=1")
+
         Log.d(TAG, "onCreate ends")
     }
 
@@ -53,9 +48,24 @@ class MainActivity : AppCompatActivity(), GetRawData.OnDownloadComplete {
     override fun onDownloadComplete(data: String, status: DownloadStatus) {
         if (status == DownloadStatus.OK) {
             Log.d(TAG, "onDownloadComplete called, data is $data")
+
+            val getFlickrJasonData = GetFlickrJsonData(this)
+            getFlickrJasonData.execute(data)
         } else {
             //download failed
             Log.d(TAG, "onDownloadComplete failed with status $status. Error message is: $data")
         }
+    }
+
+    override fun onDataAvilable(data: List<Photo>) {
+        Log.d(TAG, ".onDataAvilable called, data is $data")
+
+        Log.d(TAG, ".onDataAvilable ends")
+
+    }
+
+    override fun onError(exception: Exception) {
+        Log.d(TAG, ".onError called with${exception.message}")
+
     }
 }
