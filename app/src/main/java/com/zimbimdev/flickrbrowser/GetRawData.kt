@@ -10,11 +10,24 @@ import java.net.URL
 enum class DownloadStatus {
     OK, IDLE, NOT_INITIALIZED, FAILED_OR_EMPTY, PERMISSIONS_ERROR, ERROR
 }
-class GetRawData : AsyncTask<String, Void, String>() {
+
+class GetRawData(private val listener : OnDownloadComplete) : AsyncTask<String, Void, String>() {
     private val TAG = "GetRawData"
     private var downloadStatus = DownloadStatus.IDLE
-    override fun onPostExecute(result: String?) {
-        super.onPostExecute(result)
+
+    interface OnDownloadComplete {
+        fun onDownloadComplete (data: String, status: DownloadStatus)
+    }
+
+//    private var listener: MainActivity? = null
+//
+//    fun setDownloadCompletedListener(callbackObject: MainActivity) {
+//        listener = callbackObject
+//    }
+
+    override fun onPostExecute(result: String) {
+        Log.d(TAG, "onPostExecute Called, parameter is $result")
+        listener.onDownloadComplete(result, downloadStatus)
     }
 
     override fun doInBackground(vararg params: String?): String {
@@ -39,7 +52,8 @@ class GetRawData : AsyncTask<String, Void, String>() {
                 is SecurityException -> {
                     downloadStatus = DownloadStatus.PERMISSIONS_ERROR
                     "doInBackground: SecurityException READING DATA. Needs permission? ${e.message}"
-                }else -> {
+                }
+                else -> {
                     downloadStatus = DownloadStatus.ERROR
                     "Unknown error: ${e.message}"
                 }
