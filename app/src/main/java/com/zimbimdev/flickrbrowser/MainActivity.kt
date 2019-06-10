@@ -4,21 +4,29 @@ import android.net.Uri
 import android.nfc.NdefRecord.createUri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.LinearLayout
 
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
 
-private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity(), GetRawData.OnDownloadComplete, GetFlickrJsonData.OnDataAvilable {
+    private val TAG = "MainActivity"
+
+    private val flickrRecyclerViewAdapter = FlickrRecyclerViewAdapter(ArrayList())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d(TAG, "onCreate called")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+
+        recycler_view.layoutManager = LinearLayoutManager(this)
+        recycler_view.adapter = flickrRecyclerViewAdapter
 
         val url = createUri("https://api.flickr.com/services/feeds/photos_public.gne", "android,oreo", "en-us", true)
         val getRawData = GetRawData(this)
@@ -67,7 +75,9 @@ class MainActivity : AppCompatActivity(), GetRawData.OnDownloadComplete, GetFlic
     }
 
     override fun onDataAvilable(data: List<Photo>) {
-        Log.d(TAG, ".onDataAvilable called, data is $data")
+        Log.d(TAG, ".onDataAvilable called")
+
+        flickrRecyclerViewAdapter.loadNewData(data)
 
         Log.d(TAG, ".onDataAvilable ends")
 
